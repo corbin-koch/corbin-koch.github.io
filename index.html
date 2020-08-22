@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+.mainBars rect{
+  shape-rendering: auto;
+  fill-opacity: 0;
+  stroke-width: 0.5px;
+  stroke: rgb(0, 0, 0);
+  stroke-opacity: 0;
+}
+.subBars{
+	shape-rendering:crispEdges;
+}
+.edges{
+	stroke:none;
+	fill-opacity:0.5;
+}
+.container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.title{
+  width: 960px;
+  padding-left: 50px;
+  padding-right: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Georgia";
+  letter-spacing: "0.03em"
+}
+</style>
+<body class="bodyClass">
+
+  <div class="container">
+
+  </div>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="http://vizjs.org/viz.v1.1.0.min.js"></script>
+  <script>
+
+  var data=[
+    ["m_USA_PST","k_USA_PST",112,112],
+    ["m_Canada_EST","k_USA_PST",9,9],
+    ["m_South_Africa_GMT2","k_USA_PST",76,76],
+    ["m_South_Africa_GMT2","k_South Africa_GMT2",17,17],
+    ["m_South_Africa_GMT2","k_USA_PST",1,1],
+    ["m_UAE_GMT4","k_USA_PST",23,23],
+    ["m_UK_GMT","k_USA_PST",8,8],
+    ["m_UAE_GMT4","k_USA_PST",15,15],
+    ["m_UAE_GMT4","k_Portugal_GMT1",4,4],
+    ["m_Canada_EST","k_Portugal_GMT1",9,9],
+    ["m_Canada_EST","k_Denmark_GMT2",1,1],
+    ["m_USA_EST","k_Denmark_GMT2",3,3],
+    ["m_USA_EST","k_Netherlands_CET",4,4],
+    ["m_USA_EST","k_Germany_GMT2",5,5],
+    ["m_USA_EST","k_Czech Republic_GMT2",3,3],
+    ["m_USA_EST","k_Hungary_GMT2",3,3],
+    ["m_USA_EST","k_Paris_GMT2",5,5],
+    ["m_USA_EST","k_Spain_GMT2",8,8],
+    ["m_USA_EST","k_Portugal_GMT2",5,5],
+    ["m_USA_EST","k_USA_EST",10,10],
+    ["m_Canada_EST","k_USA_EST",2,2],
+    ["m_USA_EST","k_USA_EST",12,12],
+    ["m_USA_EST","k_USA_CST",1,1],
+    ["m_Canada_EST","k_Canada_EST",16,16],
+    ["m_Canada_EST","k_USA_EST",3,3],
+    ["m_USA_EST","k_USA_EST",3,3],
+    ["m_Canada_EST","k_USA_EST",1,1],
+    ["m_USA_PST","k_USA_EST",24,24],
+    ["m_USA_EST","k_USA_EST",3,3],
+    ["m_USA_PST","k_USA_EST",25,25],
+    ["m_Canada_EST","k_Canada_EST",3,3],
+    ["m_Canada_EST","k_USA_EST",2,2],
+    ["m_USA_PST","k_USA_EST",23,23],
+    ["m_USA_EST","k_USA_EST",3,3],
+    ["m_USA_PST","k_USA_EST",6,6],
+    ["m_USA_PST","k_USA_PST",9,9],
+    ["m_USA_PST","k_USA_EST",18,18],
+    ["m_Canada_EST","k_USA_EST",6,6],
+    ["m_Canada_EST","k_Canada_EST",4,4],
+    ["m_USA_EST","k_USA_EST",9,9],
+    ["m_Canada_EST","k_USA_EST",2,2],
+    ["m_Canada_PST","k_USA_EST",9,9],
+    ["m_USA_PST","k_USA_EST",4,4],
+    ["m_USA_PST","k_USA_PST",10,10],
+    ["m_USA_PST","k_USA_MST",3,3],
+    ["m_USA_PST","k_USA_EST",2,2],
+    ["m_USA_EST","k_USA_EST",4,4],
+    ["m_USA_PST","k_USA_EST",4,4],
+    ["m_USA_PST","k_USA_PST",109,109],
+    ["m_Canada_EST","k_USA_PST",64,64]
+  ];
+  var color ={m_USA_EST:"#3366CC", m_UAE_GMT4:"#DC3912",  m_Canada_PST:"#FF9900", m_UK_GMT:"#109618", m_USA_PST:"#BA1E90", m_South_Africa_GMT2:"#0099C6", m_Canada_EST:"#00F58F"};
+  var svg = d3.select(".container").append("svg").attr("width", 960).attr("height", 800);
+  var g = svg.append("g").attr("transform","translate(200,50)");
+
+  var bp=viz.bP()
+  		.data(data)
+  		.min(12)
+  		.pad(1)
+  		.height(700)
+  		.width(500)
+  		.barSize(35)
+  		.fill(d=>color[d.primary]);
+
+  g.call(bp);
+
+  g.selectAll(".mainBars")
+  	.on("mouseover",mouseover)
+  	.on("mouseout",mouseout)
+
+  g.selectAll(".mainBars").append("text").attr("class","label")
+    .attr("font-family", "Georgia")
+  	.attr("x",d=>(d.part=="primary"? -70: 70))
+  	.attr("y",d=>+6)
+    .attr("letter-spacing", "0.01em")
+    .attr("text-align","right")
+  	.text(d=>d.key.substring(2).split('_').join(' '))
+  	.attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
+
+  g.selectAll(".mainBars").append("text").attr("class","perc")
+    .attr("font-family", "Georgia")
+  	.attr("x",d=>(d.part=="primary"? -25: 25))
+  	.attr("y",d=>+6)
+  	.text(function(d){
+      if (d.percent < .005) {
+        return d3.format("0.1%")(d.percent)
+      } else {
+        return d3.format("0.0%")(d.percent)
+      }
+      })
+  	.attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
+
+  function mouseover(d){
+  	bp.mouseover(d);
+  	g.selectAll(".mainBars")
+  	.select(".perc")
+  	// .text(function(d){ return d3.format("0.1%")(d.percent)})
+    .text(function(d){
+      if (d.percent < .005 && d.percent != 0) {
+        return d3.format("0.1%")(d.percent)
+      } else {
+        return d3.format("0.0%")(d.percent)
+      }
+      })
+  }
+  function mouseout(d){
+  	bp.mouseout(d);
+  	g.selectAll(".mainBars")
+  		.select(".perc")
+  	// .text(function(d){ return d3.format("0.1%")(d.percent)})
+    .text(function(d){
+      if (d.percent < .005) {
+        return d3.format("0.1%")(d.percent)
+      } else {
+        return d3.format("0.0%")(d.percent)
+      }
+      })
+  }
+  d3.select(self.frameElement).style("height", "800px");
+  </script>
+</body>
+</html>
